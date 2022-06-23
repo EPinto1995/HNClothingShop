@@ -38,8 +38,19 @@ namespace HNClothingShop.WebAdmin.Controllers
         public ActionResult Crear(Categoria categoria)
 
         {
-            _categoriasBL.GuardarCategoria(categoria);
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                if (categoria.Descripcion != categoria.Descripcion.Trim())
+                {
+                    ModelState.AddModelError("Descripcio", "La descripcion no debe contener espacios al inicio o al final");
+                    return View(categoria);
+
+                }
+                _categoriasBL.GuardarCategoria(categoria);
+                return RedirectToAction("Index");
+
+            }
+            return View(categoria);
         }
 
         public ActionResult Editar(int id)
@@ -53,9 +64,19 @@ namespace HNClothingShop.WebAdmin.Controllers
         [HttpPost]
         public ActionResult Editar(Categoria categoria)
         {
-            _categoriasBL.GuardarCategoria(categoria);
+            if (ModelState.IsValid)
+            {
+                if (categoria.Descripcion != categoria.Descripcion.Trim())
+                {
+                    ModelState.AddModelError("Descripcio", "La descripcion no debe contener espacios al inicio o al final");
+                    return View(categoria);
 
-            return RedirectToAction("Index");
+                }
+                _categoriasBL.GuardarCategoria(categoria);
+                return RedirectToAction("Index");
+
+            }
+            return View(categoria);
 
         }
 

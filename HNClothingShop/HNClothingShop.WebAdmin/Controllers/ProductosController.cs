@@ -10,10 +10,13 @@ namespace HNClothingShop.WebAdmin.Controllers
     public class ProductosController : Controller
     {
         ProductosBL _productosBL;
+        CategoriasBL _categoriasBL;
 
         public ProductosController()
         {
             _productosBL = new ProductosBL();
+            _categoriasBL = new CategoriasBL();
+
         }
 
         // GET: Productos
@@ -31,37 +34,85 @@ namespace HNClothingShop.WebAdmin.Controllers
         {
 
             var nuevoProducto = new Producto();
+            var categorias = _categoriasBL.ObtenerCategorias();
+
+            ViewBag.CategoriaId = new SelectList(categorias, "ID", "Descripcion");
 
             return View(nuevoProducto);
         }
 
         [HttpPost]
-        public ActionResult Crear(Producto producto)
+        public ActionResult Crear(Producto producto, HttpPostedFileBase imagen)
 
         {
-            _productosBL.GuardarProducto(producto);
-            return RedirectToAction("Index");
+            if (ModelState.IsValid)
+            {
+                if (producto.CategoriaId == 0)
+                {
+                    ModelState.AddModelError("CategoriaId", "Seleccione una categoria");
+                    return View(producto);
+                }
+
+                if (imagen != null)
+                {
+                    producto.UrlImagen = GuardarImagen(imagen);
+                }
+
+                _productosBL.GuardarProducto(producto);
+                return RedirectToAction("Index");
+            }
+            var categorias = _categoriasBL.ObtenerCategorias();
+
+            ViewBag.CategoriaId = new SelectList(categorias, "ID", "Descripcion");
+
+
+            return View(producto);
         }
 
         public ActionResult Editar(int id)
 
         {
             var producto = _productosBL.ObtenerProducto(id);
+            var categorias = _categoriasBL.ObtenerCategorias();
+
+            ViewBag.CategoriaId =
+                new SelectList(categorias, "Id", "Descripcion", producto.CategoriaId);
+
 
             return View(producto);
         }
 
         [HttpPost]
-        public ActionResult Editar(Producto producto)
+        public ActionResult Editar(Producto producto, HttpPostedFileBase imagen)
         {
-            _productosBL.GuardarProducto(producto);
+            if (ModelState.IsValid)
+            {
+                if (producto.CategoriaId == 0)
+                {
+                    ModelState.AddModelError("CategoriaId", "Seleccione una categoria");
+                    return View(producto);
+                }
 
-            return RedirectToAction("Index");
-        
+                if (imagen != null)
+                {
+                    producto.UrlImagen = GuardarImagen(imagen);
+                }
+
+                _productosBL.GuardarProducto(producto);
+                return RedirectToAction("Index");
+            }
+            var categorias = _categoriasBL.ObtenerCategorias();
+
+            ViewBag.CategoriaId = new SelectList(categorias, "ID", "Descripcion");
+
+
+            return View(producto);
+
         }
 
         public ActionResult Detalle(int id)
         {
+            
             var producto = _productosBL.ObtenerProducto(id);
             return View(producto);
 
@@ -69,7 +120,10 @@ namespace HNClothingShop.WebAdmin.Controllers
 
         public ActionResult Eliminar(int id)
         {
+           
+
             var producto = _productosBL.ObtenerProducto(id);
+
             return View(producto);
 
         }
@@ -81,5 +135,14 @@ namespace HNClothingShop.WebAdmin.Controllers
             return RedirectToAction("Index");
 
         }
+
+        private string GuardarImagen(HttpPostedFileBase imagen)
+        {
+            string path = Server.MapPath("~/Imagenes/" + imagen.FileName);
+            imagen.SaveAs(path);
+
+            return "/Imagenes/" + imagen.FileName;
+        }
+
     }
 }
